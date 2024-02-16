@@ -10,6 +10,7 @@ class Board:
         self.numbers = '876543210HGFEDCBA'
         self.turn_count = 0
         self.turn_now = 'Black'
+        self.hod = {0: ''}
 
     def def_of_field(self):
         self.field = [['*' for _ in range(8)] for _ in range(8)]
@@ -94,15 +95,16 @@ class Board:
                         self.figs[i].coord = coordmove
                 if l != 0:
                     self.figs.pop(l)
+                self.hod[coord] = coordmove
             else:
                 print('Неверная координата')
-                self.coord_move(coord[0] + str(int(coord[1]) + 1), movelist)
+                self.coord_move(coord, movelist)
         else:
             print('Неверный формат координаты')
             self.coord_move(coord, movelist)
 
     def game(self):
-        self.view_of_field()
+        self.def_of_field()
         self.cor_update()
         self.turn_count += 1
         q = 0
@@ -114,9 +116,10 @@ class Board:
                 le.append(self.figs[i].color)
         if q != 2:
             print(f'{le[0]} цвет победил')
-            print(f'Игра заняла {self.turn_count} ходов')
+            print(f'Игра заняла {self.turn_count - 1} ходов')
         else:
             self.color_manager()
+            self.view_of_field()
             self.move(input(f'Введите координату фигуры, сейчас ход {self.turn_now}: '))
             os.system('cls')
             self.game()
@@ -363,6 +366,22 @@ class King(Figure):
         return self.choices_king()
 
 
+class Moves:
+    def __init__(self):
+        self.coords = []
+
+    def update(self, dicti):
+        for i in dicti:
+            self.coords.append(
+                {chr(int(i[0]) + 65) + str(int(i[1]) + 1): chr(int(dicti[i][0]) + 65) + str(int(dicti[i][1]) + 1)})
+
+    def __str__(self):
+        a = 'Сделанные ходы: \n'
+        for i in range(len(self.coords)):
+            a += f'Ход номер {i + 1}: {self.coords[i]} \n'
+        return a
+
+
 P1 = Pawn('01')
 P2 = Pawn('11')
 P3 = Pawn('21')
@@ -401,3 +420,8 @@ board = Board()
 for i in figs:
     board.figs.append(i)
 board.game()
+board.hod.pop(0)
+moves = Moves()
+moves.update(board.hod)
+print(moves)
+input()
