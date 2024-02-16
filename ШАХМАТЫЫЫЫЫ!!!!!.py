@@ -1,4 +1,6 @@
 import os
+
+
 class Board:
     def __init__(self, *args):
         self.figs = list(args)
@@ -47,28 +49,36 @@ class Board:
         if len(coord) != 2 or coord[0] not in (self.numbers + self.alph.lower()) or coord[1] not in self.numbers:
             print('Неверный формат координаты')
             self.move(input(f'Введите координату фигуры, сейчас ход {self.turn_now}: '))
-        if coord[0].upper() in self.alph:
+        else:
+            if coord[0].upper() in self.alph:
+                for i in range(9, len(self.numbers)):
+                    if coord[0].upper() == self.numbers[i]:
+                        coord = self.numbers[i - 8] + coord[1]
+            coord = coord[0] + str(int(coord[1]) - 1)
+            movelist = self.definer(coord)
+            if movelist != 'нет возможных ходов' and movelist != f'Сейчас ход {self.turn_now}':
+                movelist1 = []
+                movelist1.extend(movelist)
+                for i in range(len(movelist1)):
+                    if movelist1[i][0] not in self.alph:
+                        for j in range(1, 9):
+                            if movelist1[i][0] == self.numbers[j]:
+                                movelist1[i] = self.numbers[j + 8] + str(int(movelist1[i][1]) + 1)
+                print(*movelist1)
+                print(self.field[int(coord[0])][int(coord[1])])
+                self.coord_move(coord, movelist)
+            else:
+                print(movelist)
+                self.move(input(f'Введите координату фигуры, сейчас ход {self.turn_now}: '))
+
+    def coord_move(self, coord, movelist):
+        coordmove = input('Введите координату хода из возможных: ')
+        if coordmove != '' and len(coordmove) == 2 and coordmove[0].upper() in self.alph and coordmove[
+            1] in self.numbers[:8]:
+
             for i in range(9, len(self.numbers)):
-                if coord[0].upper() == self.numbers[i]:
-                    coord = self.numbers[i - 8] + coord[1]
-        coord = coord[0] + str(int(coord[1]) - 1)
-        movelist = self.definer(coord)
-        if movelist != 'нет возможных ходов' and movelist != f'Сейчас ход {self.turn_now}':
-            movelist1 = []
-            movelist1.extend(movelist)
-            for i in range(len(movelist1)):
-                if movelist1[i][0] not in self.alph:
-                    for j in range(1, 9):
-                        if movelist1[i][0] == self.numbers[j]:
-                            movelist1[i] = self.numbers[j + 8] + str(int(movelist1[i][1]) + 1)
-            print(*movelist1)
-            print(self.field[int(coord[0])][int(coord[1])])
-            coordmove = input('Введите координату хода из возможных: ')
-            if coordmove != '':
-                if coordmove[0].upper() in self.alph:
-                    for i in range(9, len(self.numbers)):
-                        if coordmove[0].upper() == self.numbers[i]:
-                            coordmove = self.numbers[i - 8] + coordmove[1]
+                if coordmove[0].upper() == self.numbers[i]:
+                    coordmove = self.numbers[i - 8] + coordmove[1]
             coordmove = coordmove[0] + str(int(coordmove[1]) - 1)
             flag = False
             for j in movelist:
@@ -86,10 +96,10 @@ class Board:
                     self.figs.pop(l)
             else:
                 print('Неверная координата')
-                self.move(coord[0] + str(int(coord[1]) + 1))
+                self.coord_move(coord[0] + str(int(coord[1]) + 1), movelist)
         else:
-            print(movelist)
-            self.move(input(f'Введите координату фигуры, сейчас ход {self.turn_now}: '))
+            print('Неверный формат координаты')
+            self.coord_move(coord, movelist)
 
     def game(self):
         self.view_of_field()
@@ -314,6 +324,14 @@ class Queen(Bishop, Rook):
         additional_list = []
         additional_list.extend(self.choices_bishop())
         additional_list.extend(self.choices_rook())
+        ir = 0
+        while True:
+            if ir >= len(additional_list):
+                break
+            if additional_list[ir] in ['н', 'е', 'т', '', 'х', 'о', 'д', 'а']:
+                additional_list.pop(ir)
+            else:
+                ir += 1
         return additional_list
 
     def choice(self):
@@ -383,5 +401,3 @@ board = Board()
 for i in figs:
     board.figs.append(i)
 board.game()
-# print(board.field)
-# print(board.figs)
