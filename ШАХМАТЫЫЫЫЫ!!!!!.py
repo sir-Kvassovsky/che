@@ -39,6 +39,9 @@ class Board:
         return 'нет возможных ходов'
 
     def move(self, coord):
+        if len(coord) != 2 or coord[0] not in (self.numbers+self.alph.lower()) or coord[1] not in self.numbers:
+            print('Неверный формат координаты')
+            self.move(input('Введите координату фигуры: '))
         if coord[0].upper() in self.alph:
             for i in range(9, len(self.numbers)):
                 if coord[0].upper() == self.numbers[i]:
@@ -81,15 +84,23 @@ class Board:
                 self.move(coord[0] + str(int(coord[1]) + 1))
         else:
             print(movelist)
-            self.move(input())
+            self.move(input('Введите координату фигуры: '))
 
     def game(self):
         self.view_of_field()
         self.cor_update()
+        q = 0
+        le = list()
         for i in range(len(self.figs)):
             self.figs[i].update(self.field)
-        self.move(input())
-        self.game()
+            if self.figs[i].name == 'K' or self.figs[i].name == 'k':
+                q += 1
+                le.append(self.figs[i].color)
+        if q != 2:
+            print(f'{le[0]} цвет победил')
+        else:
+            self.move(input('Введите координату фигуры: '))
+            self.game()
 
 
 class Figure(Board):
