@@ -45,8 +45,6 @@ class Board:
                     coord = self.numbers[i - 8] + coord[1]
         coord = coord[0] + str(int(coord[1]) - 1)
         movelist = self.definer(coord)
-        # if movelist == 'нет хода':
-        #     choice()
         if movelist != 'нет возможных ходов':
             movelist1 = []
             movelist1.extend(movelist)
