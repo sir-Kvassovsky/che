@@ -1,3 +1,4 @@
+import os
 class Board:
     def __init__(self, *args):
         self.figs = list(args)
@@ -5,6 +6,8 @@ class Board:
         self.field = self.def_of_field()
         self.alph = '    A B C D E F G H   '
         self.numbers = '876543210HGFEDCBA'
+        self.turn_count = 0
+        self.turn_now = 'Black'
 
     def def_of_field(self):
         self.field = [['*' for _ in range(8)] for _ in range(8)]
@@ -32,6 +35,8 @@ class Board:
     def definer(self, coord):
         for i in range(len(self.figs_cor)):
             if self.figs_cor[i] == coord:
+                if self.turn_now != self.figs[i].color:
+                    return f'Сейчас ход {self.turn_now}'
                 if self.figs[i].choice() == 'нет хода':
                     return 'нет возможных ходов'
                 else:
@@ -39,16 +44,16 @@ class Board:
         return 'нет возможных ходов'
 
     def move(self, coord):
-        if len(coord) != 2 or coord[0] not in (self.numbers+self.alph.lower()) or coord[1] not in self.numbers:
+        if len(coord) != 2 or coord[0] not in (self.numbers + self.alph.lower()) or coord[1] not in self.numbers:
             print('Неверный формат координаты')
-            self.move(input('Введите координату фигуры: '))
+            self.move(input(f'Введите координату фигуры, сейчас ход {self.turn_now}: '))
         if coord[0].upper() in self.alph:
             for i in range(9, len(self.numbers)):
                 if coord[0].upper() == self.numbers[i]:
                     coord = self.numbers[i - 8] + coord[1]
         coord = coord[0] + str(int(coord[1]) - 1)
         movelist = self.definer(coord)
-        if movelist != 'нет возможных ходов':
+        if movelist != 'нет возможных ходов' and movelist != f'Сейчас ход {self.turn_now}':
             movelist1 = []
             movelist1.extend(movelist)
             for i in range(len(movelist1)):
@@ -84,11 +89,12 @@ class Board:
                 self.move(coord[0] + str(int(coord[1]) + 1))
         else:
             print(movelist)
-            self.move(input('Введите координату фигуры: '))
+            self.move(input(f'Введите координату фигуры, сейчас ход {self.turn_now}: '))
 
     def game(self):
         self.view_of_field()
         self.cor_update()
+        self.turn_count += 1
         q = 0
         le = list()
         for i in range(len(self.figs)):
@@ -98,9 +104,18 @@ class Board:
                 le.append(self.figs[i].color)
         if q != 2:
             print(f'{le[0]} цвет победил')
+            print(f'Игра заняла {self.turn_count} ходов')
         else:
-            self.move(input('Введите координату фигуры: '))
+            self.color_manager()
+            self.move(input(f'Введите координату фигуры, сейчас ход {self.turn_now}: '))
+            os.system('cls')
             self.game()
+
+    def color_manager(self):
+        if self.turn_now == 'White':
+            self.turn_now = 'Black'
+        else:
+            self.turn_now = 'White'
 
 
 class Figure(Board):
