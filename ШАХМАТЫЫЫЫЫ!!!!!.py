@@ -366,6 +366,74 @@ class King(Figure):
         return self.choices_king()
 
 
+class Gold(Figure):
+    def __init__(self, coord, color="White"):
+        super().__init__(coord, color)
+        self.name = self.title('G')
+
+    def choices_gold(self):
+        additional_list = []
+        gx = [1, 1, 0, 0, -1, -1]
+        gy = [1, 0, 1, -1, 1, 0]
+        for i in range(len(gx)):
+            try:
+                if '-' not in (str(int(self.coord[0]) + gx[i]) + str(int(self.coord[1]) + gy[i])) and (
+                        self.field[int(self.coord[0]) + gx[i]][int(self.coord[1]) + gy[i]] in (
+                        self.take_others() + '*')):
+                    additional_list.append(str(int(self.coord[0]) + gx[i]) + str(int(self.coord[1]) + gy[i]))
+            except IndexError:
+                additional_list.append('нет хода')
+        if self.no_place(additional_list) is not None:
+            return self.no_place(additional_list)
+        return self.no_place(additional_list)
+
+    def choice(self):
+        return self.choices_gold()
+
+
+class Silver(Gold):
+    def __init__(self, coord, color="White"):
+        super().__init__(coord, color)
+        self.name = self.title('S')
+        self.flag = False
+
+    def choices_silver(self):
+        additional_list = []
+        gx = [1, 0, -1, -1, 1]
+        gy = [1, 1, 1, -1, -1]
+        for i in range(len(gx)):
+            try:
+                if '-' not in (str(int(self.coord[0]) + gx[i]) + str(int(self.coord[1]) + gy[i])) and (
+                        self.field[int(self.coord[0]) + gx[i]][int(self.coord[1]) + gy[i]] in (
+                        self.take_others() + '*')):
+                    additional_list.append(str(int(self.coord[0]) + gx[i]) + str(int(self.coord[1]) + gy[i]))
+            except IndexError:
+                additional_list.append('нет хода')
+        if self.no_place(additional_list) is not None:
+            return self.no_place(additional_list)
+        return self.no_place(additional_list)
+
+    def promotion(self):
+        if self.coord[1] == '5' and not self.flag:
+            if input('Улучшить? (да/нет) ') == 'да':
+                self.flag = True
+
+    def choice(self):
+        if self.flag:
+            return self.choices_gold()
+        return self.choices_silver()
+
+class Mover(Figure):
+    def __init__(self, coord, color="White"):
+        super().__init__(coord, color)
+        self.name = self.title('M')
+
+    def choices_mover(self):
+        pass
+
+
+
+
 class Moves:
     def __init__(self):
         self.coords = []
