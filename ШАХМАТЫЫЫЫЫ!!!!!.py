@@ -452,6 +452,8 @@ class King(Figure):
         return self.choices_king()
 
 
+
+
 class Gold(Figure):
     def __init__(self, coord, color="White"):
         super().__init__(coord, color)
