@@ -14,8 +14,10 @@ class Board:
 
     def def_of_field(self):
         self.field = [['*' for _ in range(8)] for _ in range(8)]
-        for il in self.figs:
-            self.field[int(il.coord[0])][int(il.coord[1])] = il.name
+        for i,l in enumerate(self.figs):
+            if self.figs[i].coord == '':
+                continue
+            self.field[int(l.coord[0])][int(l.coord[1])] = l.name
         return self.field
 
     def view_of_field(self):
@@ -87,14 +89,30 @@ class Board:
                     flag = True
             if flag and coordmove != '':
                 l = 0
+                gx = [1, 1, -1, -1]
+                gy = [1, -1, 1, -1]
                 for i in range(len(self.figs_cor)):
-                    if self.figs_cor[i] == coordmove:
-                        self.figs[i].coord = ''
-                        l = i
                     if self.figs_cor[i] == coord:
                         self.figs[i].coord = coordmove
+                        a = i
+                for i in range(len(self.figs_cor)):
+
+                    if self.figs_cor[i] == coordmove and i != a:
+                        self.figs[i].coord = ''
+                        l = i
+                    for j in range(4):
+                        try:
+                            if self.figs_cor[i] == str(int(coordmove[0]) + gx[j]) + str(int(coordmove[1]) + gy[j]) and \
+                                    self.figs[a].flag1:
+                                self.figs[i].coord = ''
+                                l = i
+                        except:
+                            pass
                 if l != 0:
-                    self.figs.pop(l)
+                    if self.figs[a].name.upper() == 'M':
+                        self.figs[l].coord = coord
+                    else:
+                        self.figs.pop(l)
                 self.hod[coord] = coordmove
             else:
                 print('Неверная координата')
@@ -108,13 +126,19 @@ class Board:
         self.cor_update()
         self.turn_count += 1
         q = 0
+        w = 0
+        b = 0
         le = list()
         for i in range(len(self.figs)):
             self.figs[i].update(self.field)
             if self.figs[i].name == 'K' or self.figs[i].name == 'k':
                 q += 1
                 le.append(self.figs[i].color)
-        if q != 2:
+            if self.figs[i].color == 'White':
+                w += 1
+            else:
+                b += 1
+        if (q != 2 and gamemode in '12') or (gamemode == '3' and (b == 0 or w == 0)):
             print(f'{le[0]} цвет победил')
             print(f'Игра заняла {self.turn_count - 1} ходов')
         else:
@@ -137,7 +161,7 @@ class Figure(Board):
         self.coord = coord
         self.color = color
         self.name = 'F'
-        self.f = 'PQKNBR'
+        self.f = 'PQKNBRSGMC'
 
     def title(self, a):
         if self.color == 'White':
@@ -178,6 +202,10 @@ class Pawn(Figure):
     def __init__(self, coord, color='White'):
         super().__init__(coord, color)
         self.name = self.title('P')
+        if self.color == "White":
+            self.o1 = '7'
+        else:
+            self.o1 = '0'
 
     def choices_pawn(self):
         additional_list = []
@@ -373,8 +401,13 @@ class Gold(Figure):
 
     def choices_gold(self):
         additional_list = []
-        gx = [1, 1, 0, 0, -1, -1]
-        gy = [1, 0, 1, -1, 1, 0]
+        if self.color == 'White':
+            gx = [1, 1, 0, 0, -1, -1]
+            gy = [1, 0, 1, -1, 1, 0]
+        else:
+            gx = [1, 1, 0, 0, -1, -1]
+            gy = [-1, 0, 1, -1, -1, 0]
+
         for i in range(len(gx)):
             try:
                 if '-' not in (str(int(self.coord[0]) + gx[i]) + str(int(self.coord[1]) + gy[i])) and (
@@ -395,12 +428,21 @@ class Silver(Gold):
     def __init__(self, coord, color="White"):
         super().__init__(coord, color)
         self.name = self.title('S')
-        self.flag = False
+        self.flag = True
+        if self.color == "White":
+            self.o1 = '5'
+        else:
+            self.o1 = '3'
 
     def choices_silver(self):
         additional_list = []
-        gx = [1, 0, -1, -1, 1]
-        gy = [1, 1, 1, -1, -1]
+        if self.color == 'White':
+            gx = [1, 0, -1, -1, 1]
+            gy = [1, 1, 1, -1, -1]
+        else:
+            gx = [1, 0, -1, -1, 1]
+            gy = [1, -1, 1, -1, -1]
+
         for i in range(len(gx)):
             try:
                 if '-' not in (str(int(self.coord[0]) + gx[i]) + str(int(self.coord[1]) + gy[i])) and (
@@ -414,24 +456,85 @@ class Silver(Gold):
         return self.no_place(additional_list)
 
     def promotion(self):
-        if self.coord[1] == '5' and not self.flag:
+        if self.coord[1] == self.o1 and self.flag:
             if input('Улучшить? (да/нет) ') == 'да':
-                self.flag = True
+                self.flag = False
 
     def choice(self):
-        if self.flag:
+        self.promotion()
+        if not self.flag:
             return self.choices_gold()
         return self.choices_silver()
+
 
 class Mover(Figure):
     def __init__(self, coord, color="White"):
         super().__init__(coord, color)
         self.name = self.title('M')
+        self.d = True
 
     def choices_mover(self):
-        pass
+        additional_list = []
+        gx = [1, 1, 1, 0, 0, -1, -1, -1]
+        gy = [1, -1, 0, 1, -1, 1, -1, 0]
+        for i in range(len(gx)):
+            try:
+                if '-' not in (str(int(self.coord[0]) + gx[i]) + str(int(self.coord[1]) + gy[i])) and (
+                        self.field[int(self.coord[0]) + gx[i]][int(self.coord[1]) + gy[i]] in (
+                        self.f + self.f.lower())):
+                    additional_list.append(str(int(self.coord[0]) + gx[i]) + str(int(self.coord[1]) + gy[i]))
+            except IndexError:
+                additional_list.append('нет хода')
+        if self.no_place(additional_list) is not None:
+            return self.no_place(additional_list)
+        return self.no_place(additional_list)
+
+    def choice(self):
+        return self.choices_mover()
 
 
+class Checker(Pawn):
+    def __init__(self, coord, color='White'):
+        super().__init__(coord, color)
+        self.name = self.title('C')
+        self.flag1 = False
+
+    def choices_checker(self):
+        additional_list = []
+        if self.color == 'White':
+            g = 1
+        else:
+            g = -1
+        try:
+            if '-' in (str(int(self.coord[0]) + g) + str(int(self.coord[1]) + g)):
+                raise IndexError
+            if self.field[int(self.coord[0]) + g][int(self.coord[1]) + g] == '*':
+                additional_list.append(str(int(self.coord[0]) + g) + str(int(self.coord[1]) + g))
+            elif self.field[int(self.coord[0]) + g][int(self.coord[1]) + g] in self.take_others():
+                if '-' in (str(int(self.coord[0]) + 2 * g) + str(int(self.coord[1]) + 2 * g)):
+                    raise IndexError
+                self.flag1 = True
+                additional_list.append(str(int(self.coord[0]) + 2 * g) + str(int(self.coord[1]) + 2 * g))
+
+        except IndexError:
+            additional_list.append('нет хода')
+        try:
+            if '-' in (str(int(self.coord[0]) - g) + str(int(self.coord[1]) + g)):
+                raise IndexError
+            if self.field[int(self.coord[0]) - g][int(self.coord[1]) + g] == '*':
+                additional_list.append(str(int(self.coord[0]) - g) + str(int(self.coord[1]) + g))
+            elif self.field[int(self.coord[0]) - g][int(self.coord[1]) + g] in self.take_others():
+                if '-' in (str(int(self.coord[0]) - 2 * g) + str(int(self.coord[1]) + 2 * g)):
+                    raise IndexError
+                self.flag1 = True
+                additional_list.append(str(int(self.coord[0]) - 2 * g) + str(int(self.coord[1]) + 2 * g))
+
+        except IndexError:
+            additional_list.append('нет хода')
+        return self.no_place(additional_list)
+
+    def choice(self):
+        return self.choices_checker()
 
 
 class Moves:
@@ -450,43 +553,95 @@ class Moves:
         return a
 
 
-P1 = Pawn('01')
-P2 = Pawn('11')
-P3 = Pawn('21')
-P4 = Pawn('31')
-P5 = Pawn('41')
-P6 = Pawn('51')
-P7 = Pawn('61')
-P8 = Pawn('71')
-p1 = Pawn('06', 'Black')
-p2 = Pawn('16', 'Black')
-p3 = Pawn('26', 'Black')
-p4 = Pawn('36', 'Black')
-p5 = Pawn('46', 'Black')
-p6 = Pawn('56', 'Black')
-p7 = Pawn('66', 'Black')
-p8 = Pawn('76', 'Black')
-B1 = Bishop('20')
-B2 = Bishop('50')
-R1 = Rook('00')
-R2 = Rook('70')
-N1 = Knight('10')
-N2 = Knight('60')
-Q = Queen('30')
-K = King('40')
-b1 = Bishop('27', 'Black')
-b2 = Bishop('57', 'Black')
-r1 = Rook('07', 'Black')
-r2 = Rook('77', 'Black')
-n1 = Knight('17', 'Black')
-n2 = Knight('67', 'Black')
-q = Queen('37', 'Black')
-k = King('47', 'Black')
-figs = [P1, P2, P3, P4, P5, P6, P7, P8, B1, B2, R1, R2, N1, N2, Q, K, p1, p2, p3, p4, p5, p6, p7, p8, b1, b2, r1, r2,
-        n1, n2, q, k]
-board = Board()
-for i in figs:
-    board.figs.append(i)
+while True:
+    gamemode = input('выберите тип игры: шахматы, шахматы с доп фигурами, шашки (1, 2, 3): ')
+    if gamemode in '123':
+        break
+
+if gamemode == '3':
+    C1 = Checker('00')
+    C2 = Checker('20')
+    C3 = Checker('40')
+    C4 = Checker('60')
+    C5 = Checker('11')
+    C6 = Checker('31')
+    C7 = Checker('51')
+    C8 = Checker('71')
+    C9 = Checker('02')
+    C10 = Checker('22')
+    C11 = Checker('42')
+    C12 = Checker('62')
+    c1 = Checker('17', 'Black')
+    c2 = Checker('37', 'Black')
+    c3 = Checker('57', 'Black')
+    c4 = Checker('77', 'Black')
+    c5 = Checker('06', 'Black')
+    c6 = Checker('26', 'Black')
+    c7 = Checker('46', 'Black')
+    c8 = Checker('66', 'Black')
+    c9 = Checker('15', 'Black')
+    c10 = Checker('35', 'Black')
+    c11 = Checker('55', 'Black')
+    c12 = Checker('75', 'Black')
+    figs = [C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12]
+    board = Board()
+    for i in figs:
+        board.figs.append(i)
+else:
+    y = 0
+    if gamemode == '2':
+        S = Silver('01')
+        G = Gold('71')
+        M1 = Mover('11')
+        M2 = Mover('61')
+        s = Silver('06', 'Black')
+        g = Gold('76', 'Black')
+        m1 = Mover('16', 'Black')
+        m2 = Mover('66', 'Black')
+        y = 1
+
+    B1 = Bishop('20')
+    B2 = Bishop('50')
+    R1 = Rook('00')
+    R2 = Rook('70')
+    N1 = Knight('10')
+    N2 = Knight('60')
+    Q = Queen('30')
+    K = King('40')
+    b1 = Bishop('27', 'Black')
+    b2 = Bishop('57', 'Black')
+    r1 = Rook('07', 'Black')
+    r2 = Rook('77', 'Black')
+    n1 = Knight('17', 'Black')
+    n2 = Knight('67', 'Black')
+    q = Queen('37', 'Black')
+    k = King('47', 'Black')
+    P1 = Pawn('0' + str(1 + y))
+    P2 = Pawn('1' + str(1 + y))
+    P3 = Pawn('21')
+    P4 = Pawn('31')
+    P5 = Pawn('41')
+    P6 = Pawn('51')
+    P7 = Pawn('6' + str(1 + y))
+    P8 = Pawn('7' + str(1 + y))
+    p1 = Pawn('0' + str(6 - y), 'Black')
+    p2 = Pawn('1' + str(6 - y), 'Black')
+    p3 = Pawn('26', 'Black')
+    p4 = Pawn('36', 'Black')
+    p5 = Pawn('46', 'Black')
+    p6 = Pawn('56', 'Black')
+    p7 = Pawn('6' + str(6 - y), 'Black')
+    p8 = Pawn('7' + str(6 - y), 'Black')
+
+    figs = [P1, P2, P3, P4, P5, P6, P7, P8, B1, B2, R1, R2, N1, N2, Q, K, p1, p2, p3, p4, p5, p6, p7, p8, b1, b2, r1,
+            r2, n1, n2, q, k]
+    try:
+        figs.extend([S, G, M1, M2, s, g, m1, m2])
+    except NameError:
+        pass
+    board = Board()
+    for i in figs:
+        board.figs.append(i)
 board.game()
 board.hod.pop(0)
 moves = Moves()
