@@ -10,11 +10,12 @@ class Board:
         self.numbers = '876543210HGFEDCBA'
         self.turn_count = 0
         self.turn_now = 'Black'
-        self.hod = {0: ''}
+        self.hod = {}
+        self.gamemode = 0
 
     def def_of_field(self):
         self.field = [['*' for _ in range(8)] for _ in range(8)]
-        for i,l in enumerate(self.figs):
+        for i, l in enumerate(self.figs):
             if self.figs[i].coord == '':
                 continue
             self.field[int(l.coord[0])][int(l.coord[1])] = l.name
@@ -96,18 +97,9 @@ class Board:
                         self.figs[i].coord = coordmove
                         a = i
                 for i in range(len(self.figs_cor)):
-
-                    if self.figs_cor[i] == coordmove and i != a:
+                    if (self.figs_cor[i] == coordmove) and i != a:
                         self.figs[i].coord = ''
                         l = i
-                    for j in range(4):
-                        try:
-                            if self.figs_cor[i] == str(int(coordmove[0]) + gx[j]) + str(int(coordmove[1]) + gy[j]) and \
-                                    self.figs[a].flag1:
-                                self.figs[i].coord = ''
-                                l = i
-                        except:
-                            pass
                 if l != 0:
                     if self.figs[a].name.upper() == 'M':
                         self.figs[l].coord = coord
@@ -120,6 +112,72 @@ class Board:
         else:
             print('Неверный формат координаты')
             self.coord_move(coord, movelist)
+
+    def start_game(self):
+        if self.gamemode == '3':
+            figs = [Checker('00'), Checker('20'), Checker('40'), Checker('60'), Checker('11'), Checker('31'),
+                    Checker('51'), Checker('71'), Checker('02'), Checker('22'), Checker('42'), Checker('62'),
+                    Checker('17', 'Black'), Checker('37', 'Black'), Checker('57', 'Black'), Checker('77', 'Black'),
+                    Checker('06', 'Black'), Checker('26', 'Black'), Checker('46', 'Black'), Checker('66', 'Black'),
+                    Checker('15', 'Black'), Checker('35', 'Black'),
+                    Checker('55', 'Black'),
+                    Checker('75', 'Black')]
+            for i in figs:
+                self.figs.append(i)
+        else:
+            y = 0
+            if self.gamemode == '2':
+                S = Silver('01')
+                G = Gold('71')
+                M1 = Mover('11')
+                M2 = Mover('61')
+                s = Silver('06', 'Black')
+                g = Gold('76', 'Black')
+                m1 = Mover('16', 'Black')
+                m2 = Mover('66', 'Black')
+                y = 1
+
+            B1 = Bishop('20')
+            B2 = Bishop('50')
+            R1 = Rook('00')
+            R2 = Rook('70')
+            N1 = Knight('10')
+            N2 = Knight('60')
+            Q = Queen('30')
+            K = King('40')
+            b1 = Bishop('27', 'Black')
+            b2 = Bishop('57', 'Black')
+            r1 = Rook('07', 'Black')
+            r2 = Rook('77', 'Black')
+            n1 = Knight('17', 'Black')
+            n2 = Knight('67', 'Black')
+            q = Queen('37', 'Black')
+            k = King('47', 'Black')
+            P1 = Pawn('0' + str(1 + y))
+            P2 = Pawn('1' + str(1 + y))
+            P3 = Pawn('21')
+            P4 = Pawn('31')
+            P5 = Pawn('41')
+            P6 = Pawn('51')
+            P7 = Pawn('6' + str(1 + y))
+            P8 = Pawn('7' + str(1 + y))
+            p1 = Pawn('0' + str(6 - y), 'Black')
+            p2 = Pawn('1' + str(6 - y), 'Black')
+            p3 = Pawn('26', 'Black')
+            p4 = Pawn('36', 'Black')
+            p5 = Pawn('46', 'Black')
+            p6 = Pawn('56', 'Black')
+            p7 = Pawn('6' + str(6 - y), 'Black')
+            p8 = Pawn('7' + str(6 - y), 'Black')
+            figs = [P1, P2, P3, P4, P5, P6, P7, P8, B1, B2, R1, R2, N1, N2, Q, K, p1, p2, p3, p4, p5, p6, p7, p8, b1,
+                    b2, r1,
+                    r2, n1, n2, q, k]
+            try:
+                figs.extend([S, G, M1, M2, s, g, m1, m2])
+            except NameError:
+                pass
+            for i in figs:
+                self.figs.append(i)
 
     def game(self):
         self.def_of_field()
@@ -138,7 +196,7 @@ class Board:
                 w += 1
             else:
                 b += 1
-        if (q != 2 and gamemode in '12') or (gamemode == '3' and (b == 0 or w == 0)):
+        if (q != 2 and self.gamemode in '12') or (self.gamemode == '3' and (b == 0 or w == 0)):
             print(f'{le[0]} цвет победил')
             print(f'Игра заняла {self.turn_count - 1} ходов')
         else:
@@ -510,9 +568,8 @@ class Checker(Pawn):
                 raise IndexError
             if self.field[int(self.coord[0]) + g][int(self.coord[1]) + g] == '*':
                 additional_list.append(str(int(self.coord[0]) + g) + str(int(self.coord[1]) + g))
-            elif self.field[int(self.coord[0]) + g][int(self.coord[1]) + g] in self.take_others():
-                if '-' in (str(int(self.coord[0]) + 2 * g) + str(int(self.coord[1]) + 2 * g)):
-                    raise IndexError
+            elif self.field[int(self.coord[0]) + g][int(self.coord[1]) + g] in self.take_others() and \
+                    self.field[int(self.coord[0]) + 2 * g][int(self.coord[1]) + 2 * g] == "*":
                 self.flag1 = True
                 additional_list.append(str(int(self.coord[0]) + 2 * g) + str(int(self.coord[1]) + 2 * g))
 
@@ -523,12 +580,24 @@ class Checker(Pawn):
                 raise IndexError
             if self.field[int(self.coord[0]) - g][int(self.coord[1]) + g] == '*':
                 additional_list.append(str(int(self.coord[0]) - g) + str(int(self.coord[1]) + g))
-            elif self.field[int(self.coord[0]) - g][int(self.coord[1]) + g] in self.take_others():
-                if '-' in (str(int(self.coord[0]) - 2 * g) + str(int(self.coord[1]) + 2 * g)):
-                    raise IndexError
+            elif self.field[int(self.coord[0]) - g][int(self.coord[1]) + g] in self.take_others() and \
+                    self.field[int(self.coord[0]) - 2 * g][int(self.coord[1]) + 2 * g]:
                 self.flag1 = True
                 additional_list.append(str(int(self.coord[0]) - 2 * g) + str(int(self.coord[1]) + 2 * g))
-
+        except IndexError:
+            additional_list.append('нет хода')
+        try:
+            if self.field[int(self.coord[0]) - g][int(self.coord[1]) - g] in self.take_others() and \
+                    self.field[int(self.coord[0]) - 2 * g][int(self.coord[1]) - 2 * g]:
+                self.flag1 = True
+                additional_list.append(str(int(self.coord[0]) - 2 * g) + str(int(self.coord[1]) - 2 * g))
+        except IndexError:
+            additional_list.append('нет хода')
+        try:
+            if self.field[int(self.coord[0]) + g][int(self.coord[1]) - g] in self.take_others() and \
+                    self.field[int(self.coord[0]) + 2 * g][int(self.coord[1]) - 2 * g]:
+                self.flag1 = True
+                additional_list.append(str(int(self.coord[0]) + 2 * g) + str(int(self.coord[1]) - 2 * g))
         except IndexError:
             additional_list.append('нет хода')
         return self.no_place(additional_list)
@@ -553,97 +622,13 @@ class Moves:
         return a
 
 
+board = Board()
 while True:
-    gamemode = input('выберите тип игры: шахматы, шахматы с доп фигурами, шашки (1, 2, 3): ')
-    if gamemode in '123':
+    board.gamemode = input('Выберите тип игры: шахматы, шахматы с доп фигурами, шашки (1, 2, 3): ')
+    if board.gamemode in '123':
         break
-
-if gamemode == '3':
-    C1 = Checker('00')
-    C2 = Checker('20')
-    C3 = Checker('40')
-    C4 = Checker('60')
-    C5 = Checker('11')
-    C6 = Checker('31')
-    C7 = Checker('51')
-    C8 = Checker('71')
-    C9 = Checker('02')
-    C10 = Checker('22')
-    C11 = Checker('42')
-    C12 = Checker('62')
-    c1 = Checker('17', 'Black')
-    c2 = Checker('37', 'Black')
-    c3 = Checker('57', 'Black')
-    c4 = Checker('77', 'Black')
-    c5 = Checker('06', 'Black')
-    c6 = Checker('26', 'Black')
-    c7 = Checker('46', 'Black')
-    c8 = Checker('66', 'Black')
-    c9 = Checker('15', 'Black')
-    c10 = Checker('35', 'Black')
-    c11 = Checker('55', 'Black')
-    c12 = Checker('75', 'Black')
-    figs = [C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12]
-    board = Board()
-    for i in figs:
-        board.figs.append(i)
-else:
-    y = 0
-    if gamemode == '2':
-        S = Silver('01')
-        G = Gold('71')
-        M1 = Mover('11')
-        M2 = Mover('61')
-        s = Silver('06', 'Black')
-        g = Gold('76', 'Black')
-        m1 = Mover('16', 'Black')
-        m2 = Mover('66', 'Black')
-        y = 1
-
-    B1 = Bishop('20')
-    B2 = Bishop('50')
-    R1 = Rook('00')
-    R2 = Rook('70')
-    N1 = Knight('10')
-    N2 = Knight('60')
-    Q = Queen('30')
-    K = King('40')
-    b1 = Bishop('27', 'Black')
-    b2 = Bishop('57', 'Black')
-    r1 = Rook('07', 'Black')
-    r2 = Rook('77', 'Black')
-    n1 = Knight('17', 'Black')
-    n2 = Knight('67', 'Black')
-    q = Queen('37', 'Black')
-    k = King('47', 'Black')
-    P1 = Pawn('0' + str(1 + y))
-    P2 = Pawn('1' + str(1 + y))
-    P3 = Pawn('21')
-    P4 = Pawn('31')
-    P5 = Pawn('41')
-    P6 = Pawn('51')
-    P7 = Pawn('6' + str(1 + y))
-    P8 = Pawn('7' + str(1 + y))
-    p1 = Pawn('0' + str(6 - y), 'Black')
-    p2 = Pawn('1' + str(6 - y), 'Black')
-    p3 = Pawn('26', 'Black')
-    p4 = Pawn('36', 'Black')
-    p5 = Pawn('46', 'Black')
-    p6 = Pawn('56', 'Black')
-    p7 = Pawn('6' + str(6 - y), 'Black')
-    p8 = Pawn('7' + str(6 - y), 'Black')
-
-    figs = [P1, P2, P3, P4, P5, P6, P7, P8, B1, B2, R1, R2, N1, N2, Q, K, p1, p2, p3, p4, p5, p6, p7, p8, b1, b2, r1,
-            r2, n1, n2, q, k]
-    try:
-        figs.extend([S, G, M1, M2, s, g, m1, m2])
-    except NameError:
-        pass
-    board = Board()
-    for i in figs:
-        board.figs.append(i)
+board.start_game()
 board.game()
-board.hod.pop(0)
 moves = Moves()
 moves.update(board.hod)
 print(moves)
