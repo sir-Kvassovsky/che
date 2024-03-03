@@ -90,8 +90,28 @@ class Board:
                     flag = True
             if flag and coordmove != '':
                 l = 0
-                gx = [1, 1, -1, -1]
-                gy = [1, -1, 1, -1]
+                gx = []
+                gy = []
+                if self.gamemode == '3':
+                    q = int(coordmove[0]) - int(coord[0])
+                    w = int(coordmove[1]) - int(coord[1])
+                    if q > 0:
+                        for i in range(1, q):
+                            gx.append(i)
+                    else:
+                        for i in range(q+1, 0):
+                            gx.append(i)
+                    if w > 0:
+                        for i in range(1, w):
+                            gy.append(i)
+                    else:
+                        for i in range(w+1, 0):
+                            gy.append(i)
+                    for i in range(min(len(gx), len(gy))):
+                        gx[i] = int(coord[0]) + gx[i]
+                        gy[i] = int(coord[0]) + gy[i]
+                    print(gx, gy)
+                    print()
                 for i in range(len(self.figs_cor)):
                     if self.figs_cor[i] == coord:
                         self.figs[i].coord = coordmove
@@ -623,12 +643,13 @@ class Moves:
             a += f'Ход номер {i + 1}: {self.coords[i]} \n'
         return a
 
-
+os.system('cls')
 board = Board()
 while True:
     board.gamemode = input('Выберите тип игры: шахматы, шахматы с доп фигурами, шашки (1, 2, 3): ')
     if board.gamemode in '123':
         break
+os.system('cls')
 board.start_game()
 board.game()
 moves = Moves()
