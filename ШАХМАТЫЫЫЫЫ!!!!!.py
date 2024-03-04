@@ -30,7 +30,8 @@ class Board:
                 print(self.alph)
                 print()
             else:
-                print(self.numbers[-il + 8], ' ', ' '.join(field_for_view[il - 1]), ' ', self.numbers[-il + 8])
+                print(self.numbers[-il + 8], ' ',
+                      ' '.join(field_for_view[il - 1]), ' ', self.numbers[-il + 8])
 
     def cor_update(self):
         self.figs_cor = []
@@ -52,7 +53,8 @@ class Board:
     def move(self, coord):
         if len(coord) != 2 or coord[0] not in (self.numbers + self.alph.lower()) or coord[1] not in self.numbers:
             print('Неверный формат координаты')
-            self.move(input(f'Введите координату фигуры, сейчас ход {self.turn_now}: '))
+            self.move(
+                input(f'Введите координату фигуры, сейчас ход {self.turn_now}: '))
         else:
             if coord[0].upper() in self.alph:
                 for i in range(9, len(self.numbers)):
@@ -67,18 +69,20 @@ class Board:
                     if movelist1[i][0] not in self.alph:
                         for j in range(1, 9):
                             if movelist1[i][0] == self.numbers[j]:
-                                movelist1[i] = self.numbers[j + 8] + str(int(movelist1[i][1]) + 1)
+                                movelist1[i] = self.numbers[j + 8] + \
+                                    str(int(movelist1[i][1]) + 1)
                 print(*movelist1)
                 print(self.field[int(coord[0])][int(coord[1])])
                 self.coord_move(coord, movelist)
             else:
                 print(movelist)
-                self.move(input(f'Введите координату фигуры, сейчас ход {self.turn_now}: '))
+                self.move(
+                    input(f'Введите координату фигуры, сейчас ход {self.turn_now}: '))
 
     def coord_move(self, coord, movelist):
         coordmove = input('Введите координату хода из возможных: ')
         if coordmove != '' and len(coordmove) == 2 and coordmove[0].upper() in self.alph and coordmove[
-            1] in self.numbers[:8]:
+                1] in self.numbers[:8]:
 
             for i in range(9, len(self.numbers)):
                 if coordmove[0].upper() == self.numbers[i]:
@@ -136,9 +140,12 @@ class Board:
     def start_game(self):
         if self.gamemode == '3':
             figs = [Checker('00'), Checker('20'), Checker('40'), Checker('60'), Checker('11'), Checker('31'),
-                    Checker('51'), Checker('71'), Checker('02'), Checker('22'), Checker('42'), Checker('62'),
-                    Checker('17', 'Black'), Checker('37', 'Black'), Checker('57', 'Black'), Checker('77', 'Black'),
-                    Checker('06', 'Black'), Checker('26', 'Black'), Checker('46', 'Black'), Checker('66', 'Black'),
+                    Checker('51'), Checker('71'), Checker('02'), Checker(
+                        '22'), Checker('42'), Checker('62'),
+                    Checker('17', 'Black'), Checker('37', 'Black'), Checker(
+                        '57', 'Black'), Checker('77', 'Black'),
+                    Checker('06', 'Black'), Checker('26', 'Black'), Checker(
+                        '46', 'Black'), Checker('66', 'Black'),
                     Checker('15', 'Black'), Checker('35', 'Black'),
                     Checker('55', 'Black'),
                     Checker('75', 'Black')]
@@ -222,7 +229,8 @@ class Board:
         else:
             self.color_manager()
             self.view_of_field()
-            self.move(input(f'Введите координату фигуры, сейчас ход {self.turn_now}: '))
+            self.move(
+                input(f'Введите координату фигуры, сейчас ход {self.turn_now}: '))
             os.system('cls')
             self.game()
 
@@ -295,10 +303,12 @@ class Pawn(Figure):
             g = -1
         try:
             if self.field[int(self.coord[0])][int(self.coord[1]) + g] == '*':
-                additional_list.append(self.coord[0] + str(int(self.coord[1]) + g))
+                additional_list.append(
+                    self.coord[0] + str(int(self.coord[1]) + g))
                 try:
                     if self.coord[1] == c and self.field[int(self.coord[0])][int(self.coord[1]) + g * 2] == '*':
-                        additional_list.append(self.coord[0] + str(int(self.coord[1]) + g * 2))
+                        additional_list.append(
+                            self.coord[0] + str(int(self.coord[1]) + g * 2))
                 except IndexError:
                     additional_list.append('нет хода')
         except IndexError:
@@ -307,14 +317,16 @@ class Pawn(Figure):
             if '-' in (str(int(self.coord[0]) + g) + str(int(self.coord[1]) + g)):
                 raise IndexError
             if self.field[int(self.coord[0]) + g][int(self.coord[1]) + g] in self.take_others():
-                additional_list.append(str(int(self.coord[0]) + g) + str(int(self.coord[1]) + g))
+                additional_list.append(
+                    str(int(self.coord[0]) + g) + str(int(self.coord[1]) + g))
         except IndexError:
             additional_list.append('нет хода')
         try:
             if '-' in (str(int(self.coord[0]) - g) + str(int(self.coord[1]) + g)):
                 raise IndexError
             if self.field[int(self.coord[0]) - g][int(self.coord[1]) + g] in self.take_others():
-                additional_list.append(str(int(self.coord[0]) - g) + str(int(self.coord[1]) + g))
+                additional_list.append(
+                    str(int(self.coord[0]) - g) + str(int(self.coord[1]) + g))
         except IndexError:
             additional_list.append('нет хода')
         return self.no_place(additional_list)
@@ -339,11 +351,11 @@ class Rook(Figure):
                     if '-' not in (
                             str(int(self.coord[0]) + j * gx[i]) + str(int(self.coord[1]) + j * gy[i])) and flag == 0:
                         if self.field[int(self.coord[0]) + j * gx[
-                            i]][int(self.coord[1]) + j * gy[i]] == '*':
+                                i]][int(self.coord[1]) + j * gy[i]] == '*':
                             additional_list.append(
                                 str(int(self.coord[0]) + j * gx[i]) + str(int(self.coord[1]) + j * gy[i]))
                         elif self.field[int(self.coord[0]) + j * gx[
-                            i]][int(self.coord[1]) + j * gy[i]] in self.take_others():
+                                i]][int(self.coord[1]) + j * gy[i]] in self.take_others():
                             additional_list.append(
                                 str(int(self.coord[0]) + j * gx[i]) + str(int(self.coord[1]) + j * gy[i]))
                             flag = 1
@@ -377,11 +389,11 @@ class Bishop(Figure):
                     if '-' not in (
                             str(int(self.coord[0]) + j * gx[i]) + str(int(self.coord[1]) + j * gy[i])) and flag == 0:
                         if self.field[int(self.coord[0]) + j * gx[
-                            i]][int(self.coord[1]) + j * gy[i]] == '*':
+                                i]][int(self.coord[1]) + j * gy[i]] == '*':
                             additional_list.append(
                                 str(int(self.coord[0]) + j * gx[i]) + str(int(self.coord[1]) + j * gy[i]))
                         elif self.field[int(self.coord[0]) + j * gx[
-                            i]][int(self.coord[1]) + j * gy[i]] in self.take_others():
+                                i]][int(self.coord[1]) + j * gy[i]] in self.take_others():
                             additional_list.append(
                                 str(int(self.coord[0]) + j * gx[i]) + str(int(self.coord[1]) + j * gy[i]))
                             flag = 1
@@ -413,7 +425,8 @@ class Knight(Figure):
                 if '-' not in (str(int(self.coord[0]) + gx[i]) + str(int(self.coord[1]) + gy[i])) and \
                         self.field[int(self.coord[0]) + gx[i]][
                             int(self.coord[1]) + gy[i]] in self.take_others() + '*':
-                    additional_list.append(str(int(self.coord[0]) + gx[i]) + str(int(self.coord[1]) + gy[i]))
+                    additional_list.append(
+                        str(int(self.coord[0]) + gx[i]) + str(int(self.coord[1]) + gy[i]))
             except IndexError:
                 additional_list.append('нет хода')
         if self.no_place(additional_list) is not None:
@@ -461,7 +474,8 @@ class King(Figure):
                 if '-' not in (str(int(self.coord[0]) + gx[i]) + str(int(self.coord[1]) + gy[i])) and (
                         self.field[int(self.coord[0]) + gx[i]][int(self.coord[1]) + gy[i]] in (
                         self.take_others() + '*')):
-                    additional_list.append(str(int(self.coord[0]) + gx[i]) + str(int(self.coord[1]) + gy[i]))
+                    additional_list.append(
+                        str(int(self.coord[0]) + gx[i]) + str(int(self.coord[1]) + gy[i]))
             except IndexError:
                 additional_list.append('нет хода')
         if self.no_place(additional_list) is not None:
@@ -470,8 +484,6 @@ class King(Figure):
 
     def choice(self):
         return self.choices_king()
-
-
 
 
 class Gold(Figure):
@@ -493,7 +505,8 @@ class Gold(Figure):
                 if '-' not in (str(int(self.coord[0]) + gx[i]) + str(int(self.coord[1]) + gy[i])) and (
                         self.field[int(self.coord[0]) + gx[i]][int(self.coord[1]) + gy[i]] in (
                         self.take_others() + '*')):
-                    additional_list.append(str(int(self.coord[0]) + gx[i]) + str(int(self.coord[1]) + gy[i]))
+                    additional_list.append(
+                        str(int(self.coord[0]) + gx[i]) + str(int(self.coord[1]) + gy[i]))
             except IndexError:
                 additional_list.append('нет хода')
         if self.no_place(additional_list) is not None:
@@ -528,7 +541,8 @@ class Silver(Gold):
                 if '-' not in (str(int(self.coord[0]) + gx[i]) + str(int(self.coord[1]) + gy[i])) and (
                         self.field[int(self.coord[0]) + gx[i]][int(self.coord[1]) + gy[i]] in (
                         self.take_others() + '*')):
-                    additional_list.append(str(int(self.coord[0]) + gx[i]) + str(int(self.coord[1]) + gy[i]))
+                    additional_list.append(
+                        str(int(self.coord[0]) + gx[i]) + str(int(self.coord[1]) + gy[i]))
             except IndexError:
                 additional_list.append('нет хода')
         if self.no_place(additional_list) is not None:
@@ -562,7 +576,8 @@ class Mover(Figure):
                 if '-' not in (str(int(self.coord[0]) + gx[i]) + str(int(self.coord[1]) + gy[i])) and (
                         self.field[int(self.coord[0]) + gx[i]][int(self.coord[1]) + gy[i]] in (
                         self.f + self.f.lower())):
-                    additional_list.append(str(int(self.coord[0]) + gx[i]) + str(int(self.coord[1]) + gy[i]))
+                    additional_list.append(
+                        str(int(self.coord[0]) + gx[i]) + str(int(self.coord[1]) + gy[i]))
             except IndexError:
                 additional_list.append('нет хода')
         if self.no_place(additional_list) is not None:
@@ -589,11 +604,13 @@ class Checker(Pawn):
             if '-' in (str(int(self.coord[0]) + g) + str(int(self.coord[1]) + g)):
                 raise IndexError
             if self.field[int(self.coord[0]) + g][int(self.coord[1]) + g] == '*':
-                additional_list.append(str(int(self.coord[0]) + g) + str(int(self.coord[1]) + g))
+                additional_list.append(
+                    str(int(self.coord[0]) + g) + str(int(self.coord[1]) + g))
             elif self.field[int(self.coord[0]) + g][int(self.coord[1]) + g] in self.take_others() and \
                     self.field[int(self.coord[0]) + 2 * g][int(self.coord[1]) + 2 * g] == "*":
                 self.flag1 = True
-                additional_list.append(str(int(self.coord[0]) + 2 * g) + str(int(self.coord[1]) + 2 * g))
+                additional_list.append(
+                    str(int(self.coord[0]) + 2 * g) + str(int(self.coord[1]) + 2 * g))
 
         except IndexError:
             additional_list.append('нет хода')
@@ -601,25 +618,29 @@ class Checker(Pawn):
             if '-' in (str(int(self.coord[0]) - g) + str(int(self.coord[1]) + g)):
                 raise IndexError
             if self.field[int(self.coord[0]) - g][int(self.coord[1]) + g] == '*':
-                additional_list.append(str(int(self.coord[0]) - g) + str(int(self.coord[1]) + g))
+                additional_list.append(
+                    str(int(self.coord[0]) - g) + str(int(self.coord[1]) + g))
             elif self.field[int(self.coord[0]) - g][int(self.coord[1]) + g] in self.take_others() and \
                     self.field[int(self.coord[0]) - 2 * g][int(self.coord[1]) + 2 * g]:
                 self.flag1 = True
-                additional_list.append(str(int(self.coord[0]) - 2 * g) + str(int(self.coord[1]) + 2 * g))
+                additional_list.append(
+                    str(int(self.coord[0]) - 2 * g) + str(int(self.coord[1]) + 2 * g))
         except IndexError:
             additional_list.append('нет хода')
         try:
             if self.field[int(self.coord[0]) - g][int(self.coord[1]) - g] in self.take_others() and \
                     self.field[int(self.coord[0]) - 2 * g][int(self.coord[1]) - 2 * g]:
                 self.flag1 = True
-                additional_list.append(str(int(self.coord[0]) - 2 * g) + str(int(self.coord[1]) - 2 * g))
+                additional_list.append(
+                    str(int(self.coord[0]) - 2 * g) + str(int(self.coord[1]) - 2 * g))
         except IndexError:
             additional_list.append('нет хода')
         try:
             if self.field[int(self.coord[0]) + g][int(self.coord[1]) - g] in self.take_others() and \
                     self.field[int(self.coord[0]) + 2 * g][int(self.coord[1]) - 2 * g]:
                 self.flag1 = True
-                additional_list.append(str(int(self.coord[0]) + 2 * g) + str(int(self.coord[1]) - 2 * g))
+                additional_list.append(
+                    str(int(self.coord[0]) + 2 * g) + str(int(self.coord[1]) - 2 * g))
         except IndexError:
             additional_list.append('нет хода')
         return self.no_place(additional_list)
@@ -643,10 +664,12 @@ class Moves:
             a += f'Ход номер {i + 1}: {self.coords[i]} \n'
         return a
 
+
 os.system('cls')
 board = Board()
 while True:
-    board.gamemode = input('Выберите тип игры: шахматы, шахматы с доп фигурами, шашки (1, 2, 3): ')
+    board.gamemode = input(
+        'Выберите тип игры: шахматы, шахматы с доп фигурами, шашки (1, 2, 3): ')
     if board.gamemode in '123':
         break
 os.system('cls')
