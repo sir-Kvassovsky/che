@@ -14,7 +14,7 @@ class Board:
         self.gamemode = 0
 
     def def_of_field(self):
-        self.field = [['*' for _ in range(8)] for _ in range(8)]
+        self.field = [['\u25A3' for _ in range(8)] for _ in range(8)]
         for i, l in enumerate(self.figs):
             if self.figs[i].coord == '':
                 continue
@@ -71,8 +71,7 @@ class Board:
                             if movelist1[i][0] == self.numbers[j]:
                                 movelist1[i] = self.numbers[j + 8] + \
                                     str(int(movelist1[i][1]) + 1)
-                print(*movelist1)
-                print(self.field[int(coord[0])][int(coord[1])])
+                self.coloring(coord, movelist)
                 self.coord_move(coord, movelist)
             else:
                 print(movelist)
@@ -114,16 +113,19 @@ class Board:
                     for i in range(min(len(gx), len(gy))):
                         gx[i] = int(coord[0]) + gx[i]
                         gy[i] = int(coord[0]) + gy[i]
-                    print(gx, gy)
-                    print()
                 for i in range(len(self.figs_cor)):
                     if self.figs_cor[i] == coord:
                         self.figs[i].coord = coordmove
                         a = i
                 for i in range(len(self.figs_cor)):
-                    if (self.figs_cor[i] == coordmove) and i != a:
-                        self.figs[i].coord = ''
-                        l = i
+                    if i != a:
+                        if self.figs_cor[i] == coordmove:
+                            self.figs[i].coord = ''
+                            l = i
+                        for j in range(min(len(gx), len(gy))):
+                            if self.figs_cor[i] == str(int(coord[0]) + gx[j]) + str(int(coord[1]) + gy[j]):
+                                self.figs[i].coord = ''
+                                l = i  
                 if l != 0:
                     if self.figs[a].name.upper() == 'M':
                         self.figs[l].coord = coord
@@ -137,6 +139,25 @@ class Board:
             print('Неверный формат координаты')
             self.coord_move(coord, movelist)
 
+    def coloring(self, coo, coordl):
+        os.system('cls')
+        self.field = [['\u25A3' for _ in range(8)] for _ in range(8)]
+        for i, l in enumerate(self.figs):
+            if self.figs[i].coord == '':
+                continue
+            self.field[int(l.coord[0])][int(l.coord[1])] = l.name
+        self.field[int(coo[0])][int(coo[1])] = '\033[31m' + self.field[int(coo[0])][int(coo[1])] + '\033[0m'
+        for i in range(len(coordl)):
+            self.field[int(coordl[i][0])][int(coordl[i][1])] = '\033[35m' + self.field[int(coordl[i][0])][int(coordl[i][1])] + '\033[0m'
+        field_for_view = list(map(list, zip(*self.field)))
+        for il in range(9, -1, -1):
+            if il == 0 or il == 9:
+                print()
+                print(self.alph)
+                print()
+            else:
+                print(self.numbers[-il + 8], ' ',
+                      ' '.join(field_for_view[il - 1]), ' ', self.numbers[-il + 8])
     def start_game(self):
         if self.gamemode == '3':
             figs = [Checker('00'), Checker('20'), Checker('40'), Checker('60'), Checker('11'), Checker('31'),
@@ -216,7 +237,7 @@ class Board:
         le = list()
         for i in range(len(self.figs)):
             self.figs[i].update(self.field)
-            if self.figs[i].name == 'K' or self.figs[i].name == 'k':
+            if self.figs[i].name == '\u2654' or self.figs[i].name == '\u265A':
                 q += 1
                 le.append(self.figs[i].color)
             if self.figs[i].color == 'White':
@@ -247,21 +268,22 @@ class Figure(Board):
         self.coord = coord
         self.color = color
         self.name = 'F'
-        self.f = 'PQKNBRSGMC'
+        self.w = '\u2654\u2655\u2656\u2657\u2658\u2659\u25C7\u2B21\u2B20\u26c0'
+        self.b = '\u265A\u265B\u265C\u265D\u265E\u265F\u25C8\u2B22\u2B20\u26c2'
 
     def title(self, a):
         if self.color == 'White':
-            return a
+            return self.w[a]
         else:
-            return a.lower()
+            return self.b[a]
 
     def update(self, field):
         self.field = field
 
     def take_others(self):
         if self.color == 'White':
-            return self.f.lower()
-        return self.f.upper()
+            return self.b
+        return self.w
 
     @staticmethod
     def no_place(additional_list):
@@ -287,7 +309,7 @@ class Figure(Board):
 class Pawn(Figure):
     def __init__(self, coord, color='White'):
         super().__init__(coord, color)
-        self.name = self.title('P')
+        self.name = self.title(5)
         if self.color == "White":
             self.o1 = '7'
         else:
@@ -302,11 +324,11 @@ class Pawn(Figure):
             c = '6'
             g = -1
         try:
-            if self.field[int(self.coord[0])][int(self.coord[1]) + g] == '*':
+            if self.field[int(self.coord[0])][int(self.coord[1]) + g] == '\u25A3':
                 additional_list.append(
                     self.coord[0] + str(int(self.coord[1]) + g))
                 try:
-                    if self.coord[1] == c and self.field[int(self.coord[0])][int(self.coord[1]) + g * 2] == '*':
+                    if self.coord[1] == c and self.field[int(self.coord[0])][int(self.coord[1]) + g * 2] == '\u25A3':
                         additional_list.append(
                             self.coord[0] + str(int(self.coord[1]) + g * 2))
                 except IndexError:
@@ -338,7 +360,7 @@ class Pawn(Figure):
 class Rook(Figure):
     def __init__(self, coord, color='White'):
         super().__init__(coord, color)
-        self.name = self.title('R')
+        self.name = self.title(2)
 
     def choices_rook(self):
         additional_list = []
@@ -351,7 +373,7 @@ class Rook(Figure):
                     if '-' not in (
                             str(int(self.coord[0]) + j * gx[i]) + str(int(self.coord[1]) + j * gy[i])) and flag == 0:
                         if self.field[int(self.coord[0]) + j * gx[
-                                i]][int(self.coord[1]) + j * gy[i]] == '*':
+                                i]][int(self.coord[1]) + j * gy[i]] == '\u25A3':
                             additional_list.append(
                                 str(int(self.coord[0]) + j * gx[i]) + str(int(self.coord[1]) + j * gy[i]))
                         elif self.field[int(self.coord[0]) + j * gx[
@@ -375,7 +397,7 @@ class Rook(Figure):
 class Bishop(Figure):
     def __init__(self, coord, color='White'):
         super().__init__(coord, color)
-        self.name = self.title('B')
+        self.name = self.title(3)
 
     def choices_bishop(self):
 
@@ -389,7 +411,7 @@ class Bishop(Figure):
                     if '-' not in (
                             str(int(self.coord[0]) + j * gx[i]) + str(int(self.coord[1]) + j * gy[i])) and flag == 0:
                         if self.field[int(self.coord[0]) + j * gx[
-                                i]][int(self.coord[1]) + j * gy[i]] == '*':
+                                i]][int(self.coord[1]) + j * gy[i]] == '\u25A3':
                             additional_list.append(
                                 str(int(self.coord[0]) + j * gx[i]) + str(int(self.coord[1]) + j * gy[i]))
                         elif self.field[int(self.coord[0]) + j * gx[
@@ -414,7 +436,7 @@ class Bishop(Figure):
 class Knight(Figure):
     def __init__(self, coord, color='White'):
         super().__init__(coord, color)
-        self.name = self.title('N')
+        self.name = self.title(4)
 
     def choices_knight(self):
         additional_list = []
@@ -424,7 +446,7 @@ class Knight(Figure):
             try:
                 if '-' not in (str(int(self.coord[0]) + gx[i]) + str(int(self.coord[1]) + gy[i])) and \
                         self.field[int(self.coord[0]) + gx[i]][
-                            int(self.coord[1]) + gy[i]] in self.take_others() + '*':
+                            int(self.coord[1]) + gy[i]] in self.take_others() + '\u25A3':
                     additional_list.append(
                         str(int(self.coord[0]) + gx[i]) + str(int(self.coord[1]) + gy[i]))
             except IndexError:
@@ -440,7 +462,7 @@ class Knight(Figure):
 class Queen(Bishop, Rook):
     def __init__(self, coord, color='White'):
         super().__init__(coord, color)
-        self.name = self.title('Q')
+        self.name = self.title(1)
 
     def choices_queen(self):
         additional_list = []
@@ -463,7 +485,7 @@ class Queen(Bishop, Rook):
 class King(Figure):
     def __init__(self, coord, color='White'):
         super().__init__(coord, color)
-        self.name = self.title('K')
+        self.name = self.title(0)
 
     def choices_king(self):
         additional_list = []
@@ -473,7 +495,7 @@ class King(Figure):
             try:
                 if '-' not in (str(int(self.coord[0]) + gx[i]) + str(int(self.coord[1]) + gy[i])) and (
                         self.field[int(self.coord[0]) + gx[i]][int(self.coord[1]) + gy[i]] in (
-                        self.take_others() + '*')):
+                        self.take_others() + '\u25A3')):
                     additional_list.append(
                         str(int(self.coord[0]) + gx[i]) + str(int(self.coord[1]) + gy[i]))
             except IndexError:
@@ -489,7 +511,7 @@ class King(Figure):
 class Gold(Figure):
     def __init__(self, coord, color="White"):
         super().__init__(coord, color)
-        self.name = self.title('G')
+        self.name = self.title(7)
 
     def choices_gold(self):
         additional_list = []
@@ -504,7 +526,7 @@ class Gold(Figure):
             try:
                 if '-' not in (str(int(self.coord[0]) + gx[i]) + str(int(self.coord[1]) + gy[i])) and (
                         self.field[int(self.coord[0]) + gx[i]][int(self.coord[1]) + gy[i]] in (
-                        self.take_others() + '*')):
+                        self.take_others() + '\u25A3')):
                     additional_list.append(
                         str(int(self.coord[0]) + gx[i]) + str(int(self.coord[1]) + gy[i]))
             except IndexError:
@@ -520,7 +542,7 @@ class Gold(Figure):
 class Silver(Gold):
     def __init__(self, coord, color="White"):
         super().__init__(coord, color)
-        self.name = self.title('S')
+        self.name = self.title(6)
         self.flag = True
         if self.color == "White":
             self.o1 = '5'
@@ -540,7 +562,7 @@ class Silver(Gold):
             try:
                 if '-' not in (str(int(self.coord[0]) + gx[i]) + str(int(self.coord[1]) + gy[i])) and (
                         self.field[int(self.coord[0]) + gx[i]][int(self.coord[1]) + gy[i]] in (
-                        self.take_others() + '*')):
+                        self.take_others() + '\u25A3')):
                     additional_list.append(
                         str(int(self.coord[0]) + gx[i]) + str(int(self.coord[1]) + gy[i]))
             except IndexError:
@@ -564,7 +586,7 @@ class Silver(Gold):
 class Mover(Figure):
     def __init__(self, coord, color="White"):
         super().__init__(coord, color)
-        self.name = self.title('M')
+        self.name = self.title(8)
         self.d = True
 
     def choices_mover(self):
@@ -591,7 +613,7 @@ class Mover(Figure):
 class Checker(Pawn):
     def __init__(self, coord, color='White'):
         super().__init__(coord, color)
-        self.name = self.title('C')
+        self.name = self.title(9)
         self.flag1 = False
 
     def choices_checker(self):
@@ -603,7 +625,7 @@ class Checker(Pawn):
         try:
             if '-' in (str(int(self.coord[0]) + g) + str(int(self.coord[1]) + g)):
                 raise IndexError
-            if self.field[int(self.coord[0]) + g][int(self.coord[1]) + g] == '*':
+            if self.field[int(self.coord[0]) + g][int(self.coord[1]) + g] == '\u25A3':
                 additional_list.append(
                     str(int(self.coord[0]) + g) + str(int(self.coord[1]) + g))
             elif self.field[int(self.coord[0]) + g][int(self.coord[1]) + g] in self.take_others() and \
@@ -617,7 +639,7 @@ class Checker(Pawn):
         try:
             if '-' in (str(int(self.coord[0]) - g) + str(int(self.coord[1]) + g)):
                 raise IndexError
-            if self.field[int(self.coord[0]) - g][int(self.coord[1]) + g] == '*':
+            if self.field[int(self.coord[0]) - g][int(self.coord[1]) + g] == '\u25A3':
                 additional_list.append(
                     str(int(self.coord[0]) - g) + str(int(self.coord[1]) + g))
             elif self.field[int(self.coord[0]) - g][int(self.coord[1]) + g] in self.take_others() and \
