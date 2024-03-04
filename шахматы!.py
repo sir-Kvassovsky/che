@@ -146,9 +146,9 @@ class Board:
             if self.figs[i].coord == '':
                 continue
             self.field[int(l.coord[0])][int(l.coord[1])] = l.name
-        self.field[int(coo[0])][int(coo[1])] = '\033[31m' + self.field[int(coo[0])][int(coo[1])] + '\033[0m'
+        self.field[int(coo[0])][int(coo[1])] = '\033[44m' + self.field[int(coo[0])][int(coo[1])] + '\033[0m'
         for i in range(len(coordl)):
-            self.field[int(coordl[i][0])][int(coordl[i][1])] = '\033[35m' + self.field[int(coordl[i][0])][int(coordl[i][1])] + '\033[0m'
+            self.field[int(coordl[i][0])][int(coordl[i][1])] = '\033[35m' + '\033[45m' + self.field[int(coordl[i][0])][int(coordl[i][1])] + '\033[0m'
         field_for_view = list(map(list, zip(*self.field)))
         for il in range(9, -1, -1):
             if il == 0 or il == 9:
@@ -268,8 +268,8 @@ class Figure(Board):
         self.coord = coord
         self.color = color
         self.name = 'F'
-        self.w = '\u2654\u2655\u2656\u2657\u2658\u2659\u25C7\u2B21\u2B20\u26c0'
-        self.b = '\u265A\u265B\u265C\u265D\u265E\u265F\u25C8\u2B22\u2B20\u26c2'
+        self.w = '\u2654\u2655\u2656\u2657\u2658\u2659\u25C7\u2B21\u25B3\u26c0\u26c1'
+        self.b = '\u265A\u265B\u265C\u265D\u265E\u265F\u25C8\u2B22\u25B2\u26c2\u26c3'
 
     def title(self, a):
         if self.color == 'White':
@@ -472,7 +472,7 @@ class Queen(Bishop, Rook):
         while True:
             if ir >= len(additional_list):
                 break
-            if additional_list[ir] in ['н', 'е', 'т', '', 'х', 'о', 'д', 'а']:
+            if additional_list[ir] in ['н', 'е', 'т', ' ', 'х', 'о', 'д', 'а']:
                 additional_list.pop(ir)
             else:
                 ir += 1
