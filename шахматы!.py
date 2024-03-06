@@ -21,18 +21,6 @@ class Board:
             self.field[int(l.coord[0])][int(l.coord[1])] = l.name
         return self.field
 
-    def view_of_field(self):
-        self.def_of_field()
-        field_for_view = list(map(list, zip(*self.field)))
-        for il in range(9, -1, -1):
-            if il == 0 or il == 9:
-                print()
-                print(self.alph)
-                print()
-            else:
-                print(self.numbers[-il + 8], ' ',
-                      ' '.join(field_for_view[il - 1]), ' ', self.numbers[-il + 8])
-
     def cor_update(self):
         self.figs_cor = []
         for i in range(len(self.figs)):
@@ -71,7 +59,14 @@ class Board:
                             if movelist1[i][0] == self.numbers[j]:
                                 movelist1[i] = self.numbers[j + 8] + \
                                     str(int(movelist1[i][1]) + 1)
-                self.coloring(coord, movelist)
+                for i in range(len(self.figs)):
+                    if self.figs[i].coord == coord:
+                        q__q = i
+                ttt = self.figs[q__q].name
+                self.figs[q__q].name = '\033[44m' + \
+                    self.figs[q__q].name + '\033[0m'
+                self.coloring(coordl=movelist)
+                self.figs[q__q].name = ttt
                 self.coord_move(coord, movelist)
             else:
                 print(movelist)
@@ -112,7 +107,7 @@ class Board:
                             gy.append(i)
                     for i in range(min(len(gx), len(gy))):
                         gx[i] = int(coord[0]) + gx[i]
-                        gy[i] = int(coord[0]) + gy[i]
+                        gy[i] = int(coord[1]) + gy[i]
                 for i in range(len(self.figs_cor)):
                     if self.figs_cor[i] == coord:
                         self.figs[i].coord = coordmove
@@ -123,11 +118,11 @@ class Board:
                             self.figs[i].coord = ''
                             l = i
                         for j in range(min(len(gx), len(gy))):
-                            if self.figs_cor[i] == str(int(coord[0]) + gx[j]) + str(int(coord[1]) + gy[j]):
+                            if self.figs_cor[i] == str(gx[j]) + str(gy[j]):
                                 self.figs[i].coord = ''
-                                l = i  
+                                l = i
                 if l != 0:
-                    if self.figs[a].name.upper() == 'M':
+                    if self.figs[a].name == '\u25B3' or self.figs[a].name == '\u25B2':
                         self.figs[l].coord = coord
                     else:
                         self.figs.pop(l)
@@ -139,16 +134,24 @@ class Board:
             print('Неверный формат координаты')
             self.coord_move(coord, movelist)
 
-    def coloring(self, coo, coordl):
+    def coloring(self, coordl, mode=0, take_others=''):
         os.system('cls')
         self.field = [['\u25A3' for _ in range(8)] for _ in range(8)]
         for i, l in enumerate(self.figs):
             if self.figs[i].coord == '':
                 continue
             self.field[int(l.coord[0])][int(l.coord[1])] = l.name
-        self.field[int(coo[0])][int(coo[1])] = '\033[44m' + self.field[int(coo[0])][int(coo[1])] + '\033[0m'
-        for i in range(len(coordl)):
-            self.field[int(coordl[i][0])][int(coordl[i][1])] = '\033[35m' + '\033[45m' + self.field[int(coordl[i][0])][int(coordl[i][1])] + '\033[0m'
+        if mode == 0:
+            for i in range(len(coordl)):
+                self.field[int(coordl[i][0])][int(coordl[i][1])] = '\033[35m' + '\033[45m' + \
+                    self.field[int(coordl[i][0])][int(
+                        coordl[i][1])] + '\033[0m'
+        else:
+            for i in range(len(coordl)):
+                if self.field[int(coordl[i][0])][int(coordl[i][1])] in take_others:
+                    self.field[int(coordl[i][0])][int(coordl[i][1])] = '\033[35m' + '\033[45m' + \
+                        self.field[int(coordl[i][0])][int(
+                            coordl[i][1])] + '\033[0m'
         field_for_view = list(map(list, zip(*self.field)))
         for il in range(9, -1, -1):
             if il == 0 or il == 9:
@@ -158,6 +161,7 @@ class Board:
             else:
                 print(self.numbers[-il + 8], ' ',
                       ' '.join(field_for_view[il - 1]), ' ', self.numbers[-il + 8])
+
     def start_game(self):
         if self.gamemode == '3':
             figs = [Checker('00'), Checker('20'), Checker('40'), Checker('60'), Checker('11'), Checker('31'),
@@ -230,7 +234,6 @@ class Board:
     def game(self):
         self.def_of_field()
         self.cor_update()
-        self.turn_count += 1
         q = 0
         w = 0
         b = 0
@@ -246,16 +249,53 @@ class Board:
                 b += 1
         if (q != 2 and self.gamemode in '12') or (self.gamemode == '3' and (b == 0 or w == 0)):
             print(f'{le[0]} цвет победил')
-            print(f'Игра заняла {self.turn_count - 1} ходов')
+            print(f'Игра заняла {self.turn_count} ходов')
         else:
             self.color_manager()
-            self.view_of_field()
+            hg = []
+            for a in range(len(self.figs)):
+                if self.turn_now != self.figs[a].color:
+                    m = a
+                    if self.figs[a].choice() != 'нет хода':
+                        if self.gamemode == '3':
+                            for tr in self.figs[a].choice():
+                                gx = []
+                                gy = []
+                                q = int(tr[0]) - int(self.figs[a].coord[0])
+                                w = int(tr[1]) - int(self.figs[a].coord[1])
+                                if q > 0:
+                                    for zxc in range(1, q):
+                                        gx.append(zxc)
+                                else:
+                                    for zxc in range(q+1, 0):
+                                        gx.append(zxc)
+                                if w > 0:
+                                    for zxc in range(1, w):
+                                        gy.append(zxc)
+                                else:
+                                    for zxc in range(w+1, 0):
+                                        gy.append(i)
+                                for zxc in range(min(len(gx), len(gy))):
+                                    gx[zxc] = int(self.figs[a].coord[0]) + gx[zxc]
+                                    gy[zxc] = int(self.figs[a].coord[1]) + gy[zxc]
+                                for zxc in range(len(self.figs_cor)):
+                                    if self.figs_cor[zxc] == self.figs[a].coord:
+                                        self.figs[zxc].coord = tr
+                                        a = zxc
+                                for zxc in range(len(self.figs_cor)):
+                                    for j in range(min(len(gx), len(gy))):
+                                        if self.figs_cor[zxc] == str(gx[j]) + str(gy[j]):
+                                            hg.append(str(gx[j]) + str(gy[j]))
+                        else:              
+                            hg.extend(self.figs[a].choice()) 
+            self.coloring(hg, 1, self.figs[m].take_others())
             self.move(
                 input(f'Введите координату фигуры, сейчас ход {self.turn_now}: '))
             os.system('cls')
             self.game()
 
     def color_manager(self):
+        self.turn_count += 1
         if self.turn_now == 'White':
             self.turn_now = 'Black'
         else:
@@ -291,6 +331,15 @@ class Figure(Board):
         for ir in range(len(additional_list)):
             if additional_list[ir] != 'нет хода':
                 co += 1
+        ir = 0
+        while True:
+            if ir >= len(additional_list):
+                break
+            if additional_list[ir] in ['н', 'е', 'т', ' ', 'х', 'о', 'д', 'а']:
+                additional_list.pop(ir)
+            else:
+                ir += 1
+                
         if co != len(additional_list) and co != 0:
             ir = 0
             while True:
@@ -300,9 +349,10 @@ class Figure(Board):
                     additional_list.pop(ir)
                 else:
                     ir += 1
-
+        
         elif co == 0:
             return 'нет хода'
+        
         return additional_list
 
 
@@ -575,6 +625,7 @@ class Silver(Gold):
         if self.coord[1] == self.o1 and self.flag:
             if input('Улучшить? (да/нет) ') == 'да':
                 self.flag = False
+                self.name = self.title(7)
 
     def choice(self):
         self.promotion()
@@ -597,7 +648,7 @@ class Mover(Figure):
             try:
                 if '-' not in (str(int(self.coord[0]) + gx[i]) + str(int(self.coord[1]) + gy[i])) and (
                         self.field[int(self.coord[0]) + gx[i]][int(self.coord[1]) + gy[i]] in (
-                        self.f + self.f.lower())):
+                        self.w + self.b)):
                     additional_list.append(
                         str(int(self.coord[0]) + gx[i]) + str(int(self.coord[1]) + gy[i]))
             except IndexError:
@@ -629,7 +680,7 @@ class Checker(Pawn):
                 additional_list.append(
                     str(int(self.coord[0]) + g) + str(int(self.coord[1]) + g))
             elif self.field[int(self.coord[0]) + g][int(self.coord[1]) + g] in self.take_others() and \
-                    self.field[int(self.coord[0]) + 2 * g][int(self.coord[1]) + 2 * g] == "*":
+                    self.field[int(self.coord[0]) + 2 * g][int(self.coord[1]) + 2 * g] == '\u25A3':
                 self.flag1 = True
                 additional_list.append(
                     str(int(self.coord[0]) + 2 * g) + str(int(self.coord[1]) + 2 * g))
@@ -643,7 +694,7 @@ class Checker(Pawn):
                 additional_list.append(
                     str(int(self.coord[0]) - g) + str(int(self.coord[1]) + g))
             elif self.field[int(self.coord[0]) - g][int(self.coord[1]) + g] in self.take_others() and \
-                    self.field[int(self.coord[0]) - 2 * g][int(self.coord[1]) + 2 * g]:
+                    self.field[int(self.coord[0]) - 2 * g][int(self.coord[1]) + 2 * g] == '\u25A3':
                 self.flag1 = True
                 additional_list.append(
                     str(int(self.coord[0]) - 2 * g) + str(int(self.coord[1]) + 2 * g))
@@ -651,7 +702,7 @@ class Checker(Pawn):
             additional_list.append('нет хода')
         try:
             if self.field[int(self.coord[0]) - g][int(self.coord[1]) - g] in self.take_others() and \
-                    self.field[int(self.coord[0]) - 2 * g][int(self.coord[1]) - 2 * g]:
+                    self.field[int(self.coord[0]) - 2 * g][int(self.coord[1]) - 2 * g] == '\u25A3':
                 self.flag1 = True
                 additional_list.append(
                     str(int(self.coord[0]) - 2 * g) + str(int(self.coord[1]) - 2 * g))
@@ -659,7 +710,7 @@ class Checker(Pawn):
             additional_list.append('нет хода')
         try:
             if self.field[int(self.coord[0]) + g][int(self.coord[1]) - g] in self.take_others() and \
-                    self.field[int(self.coord[0]) + 2 * g][int(self.coord[1]) - 2 * g]:
+                    self.field[int(self.coord[0]) + 2 * g][int(self.coord[1]) - 2 * g] == '\u25A3':
                 self.flag1 = True
                 additional_list.append(
                     str(int(self.coord[0]) + 2 * g) + str(int(self.coord[1]) - 2 * g))
