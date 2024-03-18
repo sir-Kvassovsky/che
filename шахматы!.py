@@ -10,8 +10,10 @@ class Board:
         self.numbers = '876543210HGFEDCBA'
         self.turn_count = 0
         self.turn_now = 'Black'
-        self.hod = {}
+        self.hod = [{0: 0}]
         self.gamemode = 0
+        self.flagishe = True
+        self.hoho = 0
 
     def def_of_field(self):
         self.field = [['\u25A3' for _ in range(8)] for _ in range(8)]
@@ -20,6 +22,16 @@ class Board:
                 continue
             self.field[int(l.coord[0])][int(l.coord[1])] = l.name
         return self.field
+
+    def fig_update(self):
+        ir = 0
+        while True:
+            if ir >= len(self.figs):
+                break
+            if self.figs[ir].coord == '':
+                self.figs.pop(ir)
+            else:
+                ir += 1
 
     def cor_update(self):
         self.figs_cor = []
@@ -30,7 +42,7 @@ class Board:
     def definer(self, coord):
         for i in range(len(self.figs_cor)):
             if self.figs_cor[i] == coord:
-                if self.turn_now != self.figs[i].color:
+                if self.turn_now != self.figs[i].color and self.flagishe:
                     return f'Сейчас ход {self.turn_now}'
                 if self.figs[i].choice() == 'нет хода':
                     return 'нет возможных ходов'
@@ -38,11 +50,44 @@ class Board:
                     return self.figs[i].choice()
         return 'нет возможных ходов'
 
+    def otkat(self, coord):
+        if self.flagishe:
+            self.start_game()
+            self.color_manager()
+            if (self.hod[0] == {0: 0}) and len(self.hod) != 1:
+                self.hod.pop(0)
+            if len(str(coord).split()) != 1:
+                self.end = len(self.hod) - int(coord.split()[1])
+            else:
+                self.end = len(self.hod) - 1
+                self.hod.pop(self.end)
+        if len(self.hod) == 0:
+            self.hod.append({0: 0})
+        self.flagishe = False
+        if not self.flagishe and self.hoho + 1 < self.end:
+            self.hoho += 1
+        elif self.hoho + 1 == self.end:
+            self.flagishe = True
+        self.listhodnow = list(list(self.hod[self.hoho].items())[0])
+
     def move(self, coord):
-        if len(coord) != 2 or coord[0] not in (self.numbers + self.alph.lower()) or coord[1] not in self.numbers:
+        if coord == 0:
+            self.coord_move(0, 0)
+            return 0
+        if len(coord) != 2 or coord[0] not in (self.numbers + self.alph.lower()):
             print('Неверный формат координаты')
-            self.move(
-                input(f'Введите координату фигуры, сейчас ход {self.turn_now}: '))
+            if self.flagishe:
+                self.qwe = input(
+                    f'Введите координату фигуры, сейчас ход {self.turn_now}: ')
+                if 'откат' in self.qwe:
+                    self.otkat(self.qwe)
+                    self.qwe = self.listhodnow[0]
+
+            else:
+                self.otkat(self.qwe)
+                self.qwe = self.listhodnow[0]
+
+            self.move(self.qwe)
         else:
             if coord[0].upper() in self.alph:
                 for i in range(9, len(self.numbers)):
@@ -50,7 +95,7 @@ class Board:
                         coord = self.numbers[i - 8] + coord[1]
             coord = coord[0] + str(int(coord[1]) - 1)
             movelist = self.definer(coord)
-            if movelist != 'нет возможных ходов' and movelist != f'Сейчас ход {self.turn_now}':
+            if movelist != 'нет возможных ходов' and (movelist != f'Сейчас ход {self.turn_now}' or not self.flagishe):
                 movelist1 = []
                 movelist1.extend(movelist)
                 for i in range(len(movelist1)):
@@ -70,11 +115,18 @@ class Board:
                 self.coord_move(coord, movelist)
             else:
                 print(movelist)
-                self.move(
-                    input(f'Введите координату фигуры, сейчас ход {self.turn_now}: '))
+                self.qwe = input(
+                    f'Введите координату фигуры, сейчас ход {self.turn_now}: ')
+                self.move(self.qwe)
 
     def coord_move(self, coord, movelist):
-        coordmove = input('Введите координату хода из возможных: ')
+        if coord == 0 and movelist == 0:
+            return 0
+        if self.flagishe:
+            self.rty = input('Введите координату хода из возможных: ')
+        else:
+            self.rty = self.listhodnow[1]
+        coordmove = self.rty
         if coordmove != '' and len(coordmove) == 2 and coordmove[0].upper() in self.alph and coordmove[
                 1] in self.numbers[:8]:
 
@@ -126,7 +178,10 @@ class Board:
                         self.figs[l].coord = coord
                     else:
                         self.figs.pop(l)
-                self.hod[coord] = coordmove
+                        self.flag = True
+                if self.flagishe:
+                    self.hod.append({chr(int(coord[0]) + 65) + str(int(coord[1]) + 1): chr(
+                        int(coordmove[0]) + 65) + str(int(coordmove[1]) + 1)})
             else:
                 print('Неверная координата')
                 self.coord_move(coord, movelist)
@@ -143,9 +198,12 @@ class Board:
             self.field[int(l.coord[0])][int(l.coord[1])] = l.name
         if mode == 0:
             for i in range(len(coordl)):
-                self.field[int(coordl[i][0])][int(coordl[i][1])] = '\033[35m' + '\033[45m' + \
-                    self.field[int(coordl[i][0])][int(
-                        coordl[i][1])] + '\033[0m'
+                try:
+                    self.field[int(coordl[i][0])][int(coordl[i][1])] = '\033[35m' + '\033[45m' + \
+                        self.field[int(coordl[i][0])][int(
+                            coordl[i][1])] + '\033[0m'
+                except ValueError:
+                    pass
         else:
             for i in range(len(coordl)):
                 if self.field[int(coordl[i][0])][int(coordl[i][1])] in take_others:
@@ -163,6 +221,7 @@ class Board:
                       ' '.join(field_for_view[il - 1]), ' ', self.numbers[-il + 8])
 
     def start_game(self):
+        self.figs = []
         if self.gamemode == '3':
             figs = [Checker('00'), Checker('20'), Checker('40'), Checker('60'), Checker('11'), Checker('31'),
                     Checker('51'), Checker('71'), Checker('02'), Checker(
@@ -230,16 +289,21 @@ class Board:
                 pass
             for i in figs:
                 self.figs.append(i)
+        self.hoho = -1
+        self.turn_now = 'Black'
+        self.figs_cor = self.cor_update()
+        self.field = self.def_of_field()
 
     def game(self):
         self.def_of_field()
         self.cor_update()
+        self.fig_update()
         q = 0
         w = 0
         b = 0
         le = list()
         for i in range(len(self.figs)):
-            self.figs[i].update(self.field)
+            self.figs[i].update(self.field, self.turn_now)
             if self.figs[i].name == '\u2654' or self.figs[i].name == '\u265A':
                 q += 1
                 le.append(self.figs[i].color)
@@ -249,7 +313,7 @@ class Board:
                 b += 1
         if (q != 2 and self.gamemode in '12') or (self.gamemode == '3' and (b == 0 or w == 0)):
             print(f'{le[0]} цвет победил')
-            print(f'Игра заняла {self.turn_count} ходов')
+            print(f'Игра заняла {self.turn_count + 1} ходов')
         else:
             self.color_manager()
             hg = []
@@ -259,43 +323,67 @@ class Board:
                     if self.figs[a].choice() != 'нет хода':
                         if self.gamemode == '3':
                             for tr in self.figs[a].choice():
-                                gx = []
-                                gy = []
-                                q = int(tr[0]) - int(self.figs[a].coord[0])
-                                w = int(tr[1]) - int(self.figs[a].coord[1])
-                                if q > 0:
-                                    for zxc in range(1, q):
-                                        gx.append(zxc)
-                                else:
-                                    for zxc in range(q+1, 0):
-                                        gx.append(zxc)
-                                if w > 0:
-                                    for zxc in range(1, w):
-                                        gy.append(zxc)
-                                else:
-                                    for zxc in range(w+1, 0):
-                                        gy.append(i)
-                                for zxc in range(min(len(gx), len(gy))):
-                                    gx[zxc] = int(self.figs[a].coord[0]) + gx[zxc]
-                                    gy[zxc] = int(self.figs[a].coord[1]) + gy[zxc]
-                                for zxc in range(len(self.figs_cor)):
-                                    if self.figs_cor[zxc] == self.figs[a].coord:
-                                        self.figs[zxc].coord = tr
-                                        a = zxc
-                                for zxc in range(len(self.figs_cor)):
-                                    for j in range(min(len(gx), len(gy))):
-                                        if self.figs_cor[zxc] == str(gx[j]) + str(gy[j]):
-                                            hg.append(str(gx[j]) + str(gy[j]))
-                        else:              
-                            hg.extend(self.figs[a].choice()) 
+                                try:
+                                    gx = []
+                                    gy = []
+                                    q = int(tr[0]) - int(self.figs[a].coord[0])
+                                    w = int(tr[1]) - int(self.figs[a].coord[1])
+                                    if q > 0:
+                                        for zxc in range(1, q):
+                                            gx.append(zxc)
+                                    else:
+                                        for zxc in range(q+1, 0):
+                                            gx.append(zxc)
+                                    if w > 0:
+                                        for zxc in range(1, w):
+                                            gy.append(zxc)
+                                    else:
+                                        for zxc in range(w+1, 0):
+                                            gy.append(zxc)
+                                    for zxc in range(min(len(gx), len(gy))):
+                                        gx[zxc] = int(
+                                            self.figs[a].coord[0]) + gx[zxc]
+                                        gy[zxc] = int(
+                                            self.figs[a].coord[1]) + gy[zxc]
+                                    for zxc in range(len(self.figs_cor)):
+                                        for j in range(min(len(gx), len(gy))):
+                                            if self.figs_cor[zxc] == str(gx[j]) + str(gy[j]):
+                                                hg.append(
+                                                    str(gx[j]) + str(gy[j]))
+                                except ValueError:
+                                    pass
+                        else:
+                            hg.extend(self.figs[a].choice())
+
             self.coloring(hg, 1, self.figs[m].take_others())
-            self.move(
-                input(f'Введите координату фигуры, сейчас ход {self.turn_now}: '))
+            if self.flagishe:
+                self.qwe = input(
+                    f'Введите координату фигуры, сейчас ход {self.turn_now}: ')
+                if 'откат' in self.qwe:
+                    self.otkat(self.qwe)
+                    self.qwe = self.listhodnow[0]
+            else:
+                self.otkat(self.qwe)
+                self.qwe = self.listhodnow[0]
+            self.move(self.qwe)
             os.system('cls')
             self.game()
 
     def color_manager(self):
-        self.turn_count += 1
+        if self.flagishe:
+            self.turn_count += 1
+        flagg = False
+        if self.gamemode == '3':
+            for i in range(len(self.figs)):
+                self.figs[i].flag1 = False
+                self.figs[i].choice()
+                if self.figs[i].flag1:
+                    flagg = True
+            if flagg and self.flag:
+                for i in range(len(self.figs)):
+                    self.figs[i].flag1 = False
+                self.flag = False
+                return 0
         if self.turn_now == 'White':
             self.turn_now = 'Black'
         else:
@@ -317,8 +405,9 @@ class Figure(Board):
         else:
             return self.b[a]
 
-    def update(self, field):
+    def update(self, field, move_colour):
         self.field = field
+        self.move_colour = move_colour
 
     def take_others(self):
         if self.color == 'White':
@@ -339,7 +428,7 @@ class Figure(Board):
                 additional_list.pop(ir)
             else:
                 ir += 1
-                
+
         if co != len(additional_list) and co != 0:
             ir = 0
             while True:
@@ -349,10 +438,10 @@ class Figure(Board):
                     additional_list.pop(ir)
                 else:
                     ir += 1
-        
+
         elif co == 0:
             return 'нет хода'
-        
+
         return additional_list
 
 
@@ -360,10 +449,6 @@ class Pawn(Figure):
     def __init__(self, coord, color='White'):
         super().__init__(coord, color)
         self.name = self.title(5)
-        if self.color == "White":
-            self.o1 = '7'
-        else:
-            self.o1 = '0'
 
     def choices_pawn(self):
         additional_list = []
@@ -450,7 +535,6 @@ class Bishop(Figure):
         self.name = self.title(3)
 
     def choices_bishop(self):
-
         additional_list = []
         gx = [1, 1, -1, -1]
         gy = [1, -1, -1, 1]
@@ -665,7 +749,12 @@ class Checker(Pawn):
     def __init__(self, coord, color='White'):
         super().__init__(coord, color)
         self.name = self.title(9)
+        self.flag = False
         self.flag1 = False
+        if self.color == "White":
+            self.o1 = '7'
+        else:
+            self.o1 = '0'
 
     def choices_checker(self):
         additional_list = []
@@ -681,7 +770,8 @@ class Checker(Pawn):
                     str(int(self.coord[0]) + g) + str(int(self.coord[1]) + g))
             elif self.field[int(self.coord[0]) + g][int(self.coord[1]) + g] in self.take_others() and \
                     self.field[int(self.coord[0]) + 2 * g][int(self.coord[1]) + 2 * g] == '\u25A3':
-                self.flag1 = True
+                if self.move_colour == self.color:
+                    self.flag1 = True
                 additional_list.append(
                     str(int(self.coord[0]) + 2 * g) + str(int(self.coord[1]) + 2 * g))
 
@@ -695,30 +785,74 @@ class Checker(Pawn):
                     str(int(self.coord[0]) - g) + str(int(self.coord[1]) + g))
             elif self.field[int(self.coord[0]) - g][int(self.coord[1]) + g] in self.take_others() and \
                     self.field[int(self.coord[0]) - 2 * g][int(self.coord[1]) + 2 * g] == '\u25A3':
-                self.flag1 = True
+                if self.move_colour == self.color:
+                    self.flag1 = True
                 additional_list.append(
                     str(int(self.coord[0]) - 2 * g) + str(int(self.coord[1]) + 2 * g))
         except IndexError:
             additional_list.append('нет хода')
         try:
+            if '-' in (str(int(self.coord[0]) - g) + str(int(self.coord[1]) - g)):
+                raise IndexError
             if self.field[int(self.coord[0]) - g][int(self.coord[1]) - g] in self.take_others() and \
                     self.field[int(self.coord[0]) - 2 * g][int(self.coord[1]) - 2 * g] == '\u25A3':
-                self.flag1 = True
+                if self.move_colour == self.color:
+                    self.flag1 = True
                 additional_list.append(
                     str(int(self.coord[0]) - 2 * g) + str(int(self.coord[1]) - 2 * g))
         except IndexError:
             additional_list.append('нет хода')
         try:
+            if '-' in (str(int(self.coord[0]) + g) + str(int(self.coord[1]) + g)):
+                raise IndexError
             if self.field[int(self.coord[0]) + g][int(self.coord[1]) - g] in self.take_others() and \
                     self.field[int(self.coord[0]) + 2 * g][int(self.coord[1]) - 2 * g] == '\u25A3':
-                self.flag1 = True
+                if self.move_colour == self.color:
+                    self.flag1 = True
                 additional_list.append(
                     str(int(self.coord[0]) + 2 * g) + str(int(self.coord[1]) - 2 * g))
         except IndexError:
             additional_list.append('нет хода')
         return self.no_place(additional_list)
 
+    def choices_crowned(self):
+        self.name = self.title(10)
+        additional_list = []
+        gx = [1, 1, -1, -1]
+        gy = [1, -1, -1, 1]
+        for i in range(len(gx)):
+            for j in range(1, 8):
+                try:
+                    if '-' not in (
+                            str(int(self.coord[0]) + j * gx[i]) + str(int(self.coord[1]) + j * gy[i])):
+                        if self.field[int(self.coord[0]) + j * gx[
+                                i]][int(self.coord[1]) + j * gy[i]] == '\u25A3':
+                            if self.move_colour == self.color:
+                                self.flag1 = True
+                            additional_list.append(
+                                str(int(self.coord[0]) + j * gx[i]) + str(int(self.coord[1]) + j * gy[i]))
+                        elif self.field[int(self.coord[0]) + j * gx[
+                                i]][int(self.coord[1]) + j * gy[i]] in self.take_others() and self.field[int(self.coord[0]) + gx[i] + j * gx[
+                                i]][int(self.coord[1]) + gy[i] + j * gy[i]] == '\u25A3':
+                            if self.move_colour == self.color:
+                                self.flag1 = True
+                            additional_list.append(
+                                str(int(self.coord[0]) + gx[i] + j * gx[i]) + str(int(self.coord[1]) + gy[i] + j * gy[i]))
+                        else:
+                            break
+
+                    else:
+                        break
+
+                except IndexError:
+                    additional_list.append('нет хода')
+        return self.no_place(additional_list)
+
     def choice(self):
+        if self.coord[1] == self.o1:
+            self.flag = True
+        if self.flag:
+            return self.choices_crowned()
         return self.choices_checker()
 
 
